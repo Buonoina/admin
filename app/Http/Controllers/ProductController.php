@@ -13,12 +13,24 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $products = Product::latest()->paginate(5);
-            return view('index',compact('products'))
+        return view('index',compact('products'))
+        ->with('page_id',request()->page_id)
         ->with('i', (request()->input('page', 1) - 1) * 5);
-    }
+
+        $query = Product::query();
+
+        if($search = $request->search){
+            $query->where('name', 'LIKE', "%{$search}%");
+        }
+
+        $products = $query->paginate(10);
+
+        return view('products.index', ['products' => $products]);
+        
+}
 
     /**
      * Show the form for creating a new resource.
@@ -64,7 +76,7 @@ class ProductController extends Controller
         $product->img_path = $path;
         $product->save();
 
-        return redirect()->route('products.index')->with('success', '登録しました');
+        return redirect()->route('products.index')->with("success", '登録しました');
 }
 
     /**
@@ -75,7 +87,10 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        $companies = Company::all();
+            return view ('show',compact('product'))
+            ->with('page_id',request()->page_id)
+        ->with('companies',$companies);
     }
 
     /**
@@ -87,7 +102,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $companies = Company::all();
-            return view ('edit',compact('create'))
+            return view ('edit',compact('product'))
         ->with('companies',$companies);
     }
 
@@ -101,26 +116,34 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $request->validate([
+            'user_name'=> 'required|max:20',
             'name' => 'required|max:20',
             'company_id' => 'required|integer',
             'price' => 'required|integer',
             'stock' => 'required|integer',
             'comment' => 'required|max:140',
-            'img_path' => 'nullable|image|max:2048',
         ]);
     
-        
+        if($request->file('img_path')){
+            $dir = 'img_paths';
+            $path = $request->file('img_path')->store('public/' . $dir);
+        }
 
+        $product->user_name = $request->input("user_name");
         $product->name = $request->input("name");
         $product->company_id = $request->input("company_id");
         $product->price = $request->input("price");
         $product->stock = $request->input("stock");
         $product->comment = $request->input("comment");
-        $product->img_path = $path;
+        if($request->file('img_path')){
+            $product->img_path = $path;
+        }
         $product->save();
 
-        return redirect()->route('product.index')
-            ->with('success', '登録しました');
+        $page = request()->input('page');
+
+        return redirect()->route('products.index', ['page' => $page])
+        ->with("success", '更新しました');
     }
 
     /**
@@ -131,6 +154,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $product->delete();
+        return redirect()->route('products.index')
+        ->with("success",$product->name.'を削除しました');
     }
 }

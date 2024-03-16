@@ -44,10 +44,12 @@ Route::post('/products/store/', 'App\Http\Controllers\ProductController@store')-
 
 Route::get('/products/edit/{product}', 'App\Http\Controllers\ProductController@edit')->name('product.edit')->middleware('auth');
 Route::put('/products/edit/{product}','App\Http\Controllers\ProductController@update')->name('product.update');
+
+Route::get('/products/show/{product}', 'App\Http\Controllers\ProductController@show')->name('product.show');
  
 Route::delete('/products/{product}','App\Http\Controllers\ProductController@destroy')->name('product.destroy')->middleware('auth');
 
-
+Route::get('/search', 'SearchController@search')->name('search');
 
 
 
@@ -60,3 +62,5 @@ Route::get('/blogs/edit/{blog}', 'App\Http\Controllers\BlogController@edit')->na
 Route::put('/blogs/edit/{blog}','App\Http\Controllers\BlogController@update')->name('blog.update')->middleware('auth');
  
 Route::delete('/blogs/{blog}','App\Http\Controllers\BlogController@destroy')->name('blog.destroy')->middleware('auth');
+
+Route::get('searchproduct', 'ProductController@search')->name('searchproduct');
