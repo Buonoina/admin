@@ -31,7 +31,4 @@ class Product extends Model
         return $this->belongsTo(Company::class);
 
     }
-    
 }
-
-
