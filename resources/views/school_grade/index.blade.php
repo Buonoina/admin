@@ -29,7 +29,7 @@
         @foreach ($school_grades as $school_grade)
         <tr>
             <td style="text-align:right">{{ $school_grade->grade->grade_id->grade }}</td>
-            <td style="text-align:right">{{ $school_grade-grade->>grade_id->term }}</td>
+            <td style="text-align:right">{{ $school_grade-grade->grade_id->term }}</td>
             <td style="text-align:right">{{ $school_grade->japanese }}</td>
             <td style="text-align:right">{{ $school_grade->math }}</td>
             <td style="text-align:right">{{ $school_grade->science }}</td>
