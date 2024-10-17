@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator; 
 
 class ProductController extends Controller
 {
@@ -15,38 +17,30 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // 全部の処理共通で必要 (会社情報)
-        // 検索したとき($request 内に search があった場合)
-            $search = $request->input('search');
-            $company = $request->input('company'); 
+        $search = $request->input('search');
+        $company = $request->input('company'); 
 
+        $companies = Company::all();
 
-            $companies = Company::query()->get();
+        $product_query = Product::query();
 
-            $product_query = Product::query();
+        // 商品検索条件を追加
+        if ($search) {
+            $product_query->where('name', 'LIKE', "%{$search}%");
+        }
 
-            // 商品検索条件を追加
-            if($request->search){
-            $product_query -> where('name', 'LIKE', "%{$search}%");
-             }
+        if ($company) {
+            $product_query->where('company_id', $company);
+        }
 
-             if($request->company){
-            $product_query -> where('company_id', 'LIKE', "%{$company}%");
-             }
+        // 商品一覧を 10 ごとに作成
+        $products = $product_query->orderBy('company_id', 'asc')->paginate(10);
 
-            // 商品一覧を 10 ごとに作成
-            $products = $product_query -> orderBy('company_id', 'asc') ->paginate(10);
-
-            // products と companies を view に渡す。
-            return view('index', compact('products', 'companies'));      
-
-        // 検索していない場合
-        $products = Product::latest()->paginate(5);
-        return view('index',compact('products', 'companies'))
-        -> with('page_id',request()->page_id)
-        -> with('i', (request()->input('page', 1) - 1) * 5);
-}
-
+        // products と companies を view に渡す。
+        return view('index', compact('products', 'companies'))
+            ->with('page_id', request()->page_id)
+            ->with('i', (request()->input('page', 1) - 1) * 10);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -56,8 +50,7 @@ class ProductController extends Controller
     public function create()
     {
         $companies = Company::all();
-            return view('create')
-        ->with('companies',$companies);
+        return view('create')->with('companies', $companies);
     }
 
     /**
@@ -68,32 +61,53 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'user_name'=> 'required|max:20',
+        // バリデーションを実行
+        $validation = Validator::make($request->all(), [
             'name' => 'required|max:20',
             'company_id' => 'required|integer',
             'price' => 'required|integer',
             'stock' => 'required|integer',
             'comment' => 'required|max:140',
-            'img_path' => 'required',
+            'img_path' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'name.required' => config('messages.name_required'),
+            'company_id.required' => config('messages.company_required'),
+            'price.required' => config('messages.price_required'),
+            'stock.required' => config('messages.stock_required'),
+            'comment.required' => config('messages.comment_required'),
+            'img_path.required' => config('messages.img_path_required'),
+            'img_path.image' => config('messages.img_path_image'),
+            'img_path.max' => config('messages.img_path_max'),
         ]);
-    
-        $dir = 'img_paths';
 
-        $path = $request->file('img_path')->store('public/' . $dir);
+        if ($validation->fails()) {
+            return redirect()->back()->withErrors($validation)->withInput();
+        }
 
-    $product = new Product;
-        $product->user_name = $request->input("user_name");
-        $product->name = $request->input("name");
-        $product->company_id = $request->input("company_id");
-        $product->price = $request->input("price");
-        $product->stock = $request->input("stock");
-        $product->comment = $request->input("comment");
-        $product->img_path = $path;
-        $product->save();
+        // トランザクション開始
+        try {
+            DB::transaction(function () use ($request) {
+                // 画像の保存
+                $path = $request->file('img_path')->store('public/img_paths');
+
+                // 新しい商品を作成
+                $product = new Product();
+                $product->name = $request->input("name");
+                $product->company_id = $request->input("company_id");
+                $product->price = $request->input("price");
+                $product->stock = $request->input("stock");
+                $product->comment = $request->input("comment");
+                $product->img_path = $path; // 保存した画像のパスをセット
+                $product->save();
+            });
+        } catch (\Exception $e) {
+            // エラーログを記録
+            \Log::error('商品登録中にエラーが発生しました: ' . $e->getMessage());
+            return redirect()->back()->with('error', '商品登録中にエラーが発生しました。')->withInput();
+        }
 
         return redirect()->route('products.index')->with("success", '登録しました');
-}
+    }
 
     /**
      * Display the specified resource.
@@ -104,9 +118,8 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $companies = Company::all();
-            return view ('show',compact('product'))
-            ->with('page_id',request()->page_id)
-        ->with('companies',$companies);
+        return view('show', compact('product', 'companies'))
+            ->with('page_id', request()->page_id);
     }
 
     /**
@@ -118,8 +131,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $companies = Company::all();
-            return view ('edit',compact('product'))
-        ->with('companies',$companies);
+        return view('edit', compact('product', 'companies'));
     }
 
     /**
@@ -131,36 +143,48 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $request->validate([
-            'user_name'=> 'required|max:20',
+        // バリデーションを実行
+        $validation = Validator::make($request->all(), [
             'name' => 'required|max:20',
             'company_id' => 'required|integer',
             'price' => 'required|integer',
             'stock' => 'required|integer',
             'comment' => 'required|max:140',
+            'img_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'name.required' => config('messages.name_required'),
+            'company_id.required' => config('messages.company_required'),
+            'price.required' => config('messages.price_required'),
+            'stock.required' => config('messages.stock_required'),
+            'comment.required' => config('messages.comment_required'),
         ]);
-    
-        if($request->file('img_path')){
-            $dir = 'img_paths';
-            $path = $request->file('img_path')->store('public/' . $dir);
+
+        // バリデーションが失敗した場合
+        if ($validation->fails()) {
+            return redirect()->back()->withErrors($validation)->withInput();
         }
 
-        $product->user_name = $request->input("user_name");
-        $product->name = $request->input("name");
-        $product->company_id = $request->input("company_id");
-        $product->price = $request->input("price");
-        $product->stock = $request->input("stock");
-        $product->comment = $request->input("comment");
-        if($request->file('img_path')){
-            $product->img_path = $path;
+        // トランザクション開始
+        try {
+            DB::transaction(function () use ($request, $product) {
+                $product->fill($request->except('img_path'));
+
+                if ($request->file('img_path')) {
+                    $path = $request->file('img_path')->store('public/img_paths');
+                    $product->img_path = $path;
+                }
+
+                $product->save();
+            });
+        } catch (\Exception $e) {
+            // エラーログを記録
+            \Log::error('商品更新中にエラーが発生しました: ' . $e->getMessage());
+            return redirect()->back()->with('error', '商品更新中にエラーが発生しました。')->withInput();
         }
-        $product->save();
 
-        $page = request()->input('page');
-
-        return redirect()->route('products.index', ['page' => $page])
-        ->with("success", '更新しました');
+        return redirect()->route('products.index')->with("success", '更新しました');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -171,7 +195,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
-        return redirect()->route('products.index')
-        ->with("success",$product->name.'を削除しました');
+        return redirect()->route('products.index')->with("success", $product->name . 'を削除しました');
     }
 }
+

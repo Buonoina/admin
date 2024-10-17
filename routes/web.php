@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,7 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-
 
 Route::get('/bunbougus', 'App\Http\Controllers\BunbouguController@index')->name('bunbougus.index');
 
@@ -46,18 +46,23 @@ Route::get('/search', 'SearchController@search')->name('search');
 
 
 
-Route::get('/blogs', 'App\Http\Controllers\BlogController@index')->name('blogs.index');
+Route::get('/students', 'App\Http\Controllers\StudentController@index')->name('students.index');
  
-Route::get('/blogs/create', 'App\Http\Controllers\BlogController@create')->name('blog.create')->middleware('auth');
-Route::post('/blogs/store/', 'App\Http\Controllers\BlogController@store')->name('blog.store')->middleware('auth');
+Route::get('/students/create', 'App\Http\Controllers\StudentController@create')->name('student.create')->middleware('auth');
+Route::get('/students/create', 'App\Http\Controllers\StudentController@create')->name('school_grade.create')->middleware('auth');
+Route::post('/students/store/', 'App\Http\Controllers\StudentController@store')->name('student.store')->middleware('auth');
  
-Route::get('/blogs/edit/{blog}', 'App\Http\Controllers\BlogController@edit')->name('blog.edit')->middleware('auth');
-Route::put('/blogs/edit/{blog}','App\Http\Controllers\BlogController@update')->name('blog.update')->middleware('auth');
- 
-Route::delete('/blogs/{blog}','App\Http\Controllers\BlogController@destroy')->name('blog.destroy')->middleware('auth');
+Route::get('/students/edit/{student}', 'App\Http\Controllers\StudentController@edit')->name('student.edit')->middleware('auth');
+Route::put('/students/edit/{student}','App\Http\Controllers\StudentController@update')->name('student.update')->middleware('auth');
+
+Route::get('/students/show/{student}', 'App\Http\Controllers\StudentController@show')->name('student.show');
+
+Route::delete('/students/{student}','App\Http\Controllers\StudentController@destroy')->name('student.destroy')->middleware('auth');
+
+Route::get('/school_grades', 'App\Http\Controllers\School_gradeController@index')->name('school_grades.index');
+Route::get('/school_grades', 'App\Http\Controllers\School_gradeController@create')->name('school_grade.create')->middleware('auth');
+Route::get('/school_grades', 'App\Http\Controllers\School_gradeController@create')->name('student.create')->middleware('auth');
 
 Auth::routes();
-
-
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -1,13 +1,13 @@
 <?php
 
 namespace Database\Factories;
-
+use App\Models\School_grade;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Company;
+
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
  */
-class ProductFactory extends Factory
+class StudentFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,12 +19,11 @@ class ProductFactory extends Factory
         return [
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => null,
-            'name' => $this->faker->realText(10),
+            'grade' => $this->faker->numberBetween($min = 1, $max = 4),
+            'name' => $this->faker->name,
+            'address' => $this->faker->streetAddress,
             'img_path' => 'https://picsum.photos/200/300',
-            'price' => $this->faker->numberBetween($min = 50, $max = 999),
-            'stock' => $this->faker->randomDigit,
             'comment' => $this->faker->realText(50),
-            'company_id' => Company::factory(),
         ];
     }
 }

@@ -15,19 +15,15 @@
     @csrf
      
     <dl class="row mt-3" >
+
+        <dt class="col-sm-8">ID</dt>
+        <dd class="col-sm-10">{{ $product->id }}</dd>
+    
         <dt class="col-sm-8">商品名</dt>
         <dd class="col-sm-10">{{ $product->name }}</dd>
         
-        <dt class="col-sm-8">編集者</dt>
-        <dd class="col-sm-10">{{ $product->user_name }}</dd>
-        
         <dt class="col-sm-8">メーカー名</dt>
-        <dd class="col-sm-10">
-            @foreach ($companies as $company)
-                @if ($company->id == $product->company_id)
-                    {{ $company->company_name }}
-                @endif
-            @endforeach
+        <dd class="col-sm-10">{{ $product->company ? $product->company->company_name : '不明' }}
         </dd>
 
         <dt class="col-sm-8">価格</dt>
@@ -45,10 +41,10 @@
 </div>
         <ul style="display: flex; list-style: none; padding: 40px;">
             <li style="margin-right: 30px;">
-                <a class="btn btn-outline-success" href="{{ route('product.edit',$product->id) }}">　編集　</a>
+                <a class="btn btn-outline-success" href="{{ route('product.edit',$product->id) }}">編集</a>
             </li>
             <li style="margin-right: 30px;">
-                <a class="btn btn-outline-success" href="{{ url('/products') }}?page_id={{ $page_id }}">　戻る　</a>
+                <a class="btn btn-outline-success" href="{{ url('/products') }}?page_id={{ $page_id }}">戻る</a>
             </li>
         </ul>
     </div>

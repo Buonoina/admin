@@ -10,85 +10,80 @@
 </div>
  
 <div style="text-align:left;">
-<form action="{{ route('product.update',$product->id) }}" method="POST" enctype="multipart/form-data">
-@method('PUT')
+<form action="{{ route('product.update', $product->id) }}" method="POST" enctype="multipart/form-data">
+    @method('PUT')
     @csrf
-     
-     <div class="row">
-        <div class="col-12 mb-2 mt-2">商品名
-            <div class="form-group">
-                <input type="text" name="name"  value="{{ $product->name }}" class="form-control" placeholder="名前">
-                @error('name')
-                <span style="color:red;">商品名を20文字以内で入力してください</span>
-                @enderror
-            </div>
-        </div>
-        <div class="form-group">編集者
-                <input type="text" name="user_name" value="{{ $product->user_name }}"  class="form-control" placeholder="編集者">
-                @error('name')
-                <span style="color:red;">編集者名を20文字以内で入力してください</span>
-                @enderror
-        </div>
 
-        <div class="col-12 mb-2 mt-2">
-            <div class="form-group">メーカー名
-                <select name="company_id" class="form-select">
-                    <option>分類を選択してください</otion>
-                    @foreach ($companies as $company)
-                        <option value="{{ $company->id }}"@if($company->id==$product->company_id) selected @endif>{{ $company->company_name }}</otion>
-                    @endforeach
-                </select>
-                @error('company')
-                <span style="color:red;">メーカー名を選択してください</span>
-                @enderror
+    <div class="row">
+        <div class="col-12 mb-2 mt-2">ID : {{ $product->id }}</div>
+        <div class="row">
+            <div class="col-12 mb-2 mt-2">商品名
+                <div class="form-group">
+                    <input type="text" name="name" value="{{ $product->name }}" class="form-control" placeholder="名前">
+                    @error('name')
+                    <span style="color:red;">{{ $message }}</span>
+                    @enderror
+                </div>
             </div>
-        </div>
-        <div class="col-12 mb-2 mt-2">
-            <div class="form-group">価格
-                <input type="text" name="price" value="{{ $product->price }}" class="form-control" placeholder="価格">
-                @error('price')
-                <span style="color:red;">価格を数値で入力してください</span>
-                @enderror
+
+            <div class="col-12 mb-2 mt-2">
+                <div class="form-group">メーカー名
+                    <select name="company_id" class="form-select">
+                        <option>分類を選択してください</option>
+                        @foreach ($companies as $company)
+                            <option value="{{ $company->id }}" @if($company->id == $product->company_id) selected @endif>{{ $company->company_name }}</option>
+                        @endforeach
+                    </select>
+                    @error('company_id')
+                    <span style="color:red;">{{ $message }}</span>
+                    @enderror
+                </div>
             </div>
-        </div>
-        </div>
-        <div class="col-12 mb-2 mt-2">
-            <div class="form-group">在庫数
-                <input type="text" name="stock" value="{{ $product->stock }}" class="form-control" placeholder="在庫数">
-                @error('stock')
-                <span style="color:red;">在庫を数値で入力してください</span>
-                @enderror
+            <div class="col-12 mb-2 mt-2">
+                <div class="form-group">価格
+                    <input type="text" name="price" value="{{ $product->price }}" class="form-control" placeholder="価格">
+                    @error('price')
+                    <span style="color:red;">{{ $message }}</span>
+                    @enderror
+                </div>
             </div>
-        </div>
-        <div class="col-12 mb-2 mt-2">
-            <div class="form-group">コメント
-            <textarea class="form-control" style="height:60px" name="comment" placeholder="コメント">{{ $product->comment }}</textarea>
-            @error('comment')
-            <span style="color:red;">コメントを140文字で入力してください</span>
-            @enderror
+            <div class="col-12 mb-2 mt-2">
+                <div class="form-group">在庫数
+                    <input type="text" name="stock" value="{{ $product->stock }}" class="form-control" placeholder="在庫数">
+                    @error('stock')
+                    <span style="color:red;">{{ $message }}</span>
+                    @enderror
+                </div>
             </div>
-        </div>
-        商品画像
-        <div class="col-12 mb-2 mt-2">
-            <input type="file" name="img_path" value="{{ $product->img_path }}" accept=".jpg,.png,image/gif,image/jpeg,image/png">
-        </div>
-        <div class="col-12 mb-2 mt-2">
+            <div class="col-12 mb-2 mt-2">
+                <div class="form-group">コメント
+                    <textarea class="form-control" style="height:60px" name="comment" placeholder="コメント">{{ $product->comment }}</textarea>
+                    @error('comment')
+                    <span style="color:red;">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+            商品画像
+            <div class="col-12 mb-2 mt-2">
+                <input type="file" name="img_path" accept=".jpg,.png,image/gif,image/jpeg,image/png">
+                @if ($product->img_path)
+                <img src="{{ Storage::url($product->img_path) }}" alt="商品画像" style="max-width: 100px;">
+                @endif
+            </div>
+            <div class="col-12 mb-2 mt-2">
                 <input type="hidden" name="page" value="{{ request()->input('page') }}">
                 <button type="submit" class="btn btn-outline-primary w-100">変更</button>
+            </div>
+            <ul style="display: flex; list-style: none; padding: 40px;">
+                <li style="margin-right: 30px;">
+                    <a class="btn btn-outline-success" href="{{ url('/products') }}">新規登録</a>
+                </li>
+                <li style="margin-right: 30px;">
+                    <a class="btn btn-outline-success" href="{{ url('/products') }}">戻る　</a>
+                </li>
+            </ul>
         </div>
-        <ul style="display: flex; list-style: none; padding: 40px;">
-            <li style="margin-right: 30px;">
-                <a class="btn btn-outline-success" href="{{ url('/products') }}">新規登録</a>
-            </li>
-            <li style="margin-right: 30px;">
-                <a class="btn btn-outline-success" href="{{ url('/products') }}">　戻る　</a>
-            </li>
-        </ul>
-
-        </div>
-    
     </div>      
 </form>
-</div>
 </div>
 @endsection
