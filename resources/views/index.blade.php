@@ -49,6 +49,7 @@
   @foreach ($products as $product)
   <tr>
     <td style="text-align:right">{{ $product->id }}</td>
+<<<<<<< HEAD
     <td style="width: 20%;">
       <img src="{{ Storage::url($product->img_path) }}" alt="{{ $product->name }}" class="img-fluid" width="85">
     </td>
@@ -74,3 +75,23 @@
 
 {!! $products->links('pagination::bootstrap-5') !!}
 @endsection
+=======
+    <td style="width: 20%;"> <img src="{{ Storage::url($product->img_path) }}" alt="" class="img-fluid" width="85"></td>
+    <td style="text-align:right">{{ $product->name }}</td>
+    <td style="text-align:right">{{ $product->price }}円</td>
+    <td style="text-align:right">{{ $product->stock }}</td>
+    <td style="text-align:right">{{ $product->company->company_name}}</td>
+    <td style="text-align:center"> @auth <a class="btn btn-outline-primary" href="{{ route('product.show',$product->id) }}">詳細</a> @endauth </td>
+    <td style="text-align:center">
+      <form action="{{ route('product.destroy',$product->id) }}" method="POST"> 
+        @csrf @method('DELETE') 
+        <button type="submit" class="btn btn-outline-danger" onclick='return confirm("削除しますか？");'>削除
+      </button>
+    </form>
+  </td>
+</tr>
+   @endforeach 
+  </table> 
+  {!! $products->links('pagination::bootstrap-5') !!} 
+  @endsection
+>>>>>>> 6d2a0fe0526d9a21b0624f06546fa7ea01537733

@@ -49,7 +49,10 @@ Route::get('/search', 'SearchController@search')->name('search');
 Route::get('/students', 'App\Http\Controllers\StudentController@index')->name('students.index');
  
 Route::get('/students/create', 'App\Http\Controllers\StudentController@create')->name('student.create')->middleware('auth');
+<<<<<<< HEAD
 Route::get('/students/create', 'App\Http\Controllers\StudentController@create')->name('school_grade.create')->middleware('auth');
+=======
+>>>>>>> 6d2a0fe0526d9a21b0624f06546fa7ea01537733
 Route::post('/students/store/', 'App\Http\Controllers\StudentController@store')->name('student.store')->middleware('auth');
  
 Route::get('/students/edit/{student}', 'App\Http\Controllers\StudentController@edit')->name('student.edit')->middleware('auth');
@@ -60,8 +63,12 @@ Route::get('/students/show/{student}', 'App\Http\Controllers\StudentController@s
 Route::delete('/students/{student}','App\Http\Controllers\StudentController@destroy')->name('student.destroy')->middleware('auth');
 
 Route::get('/school_grades', 'App\Http\Controllers\School_gradeController@index')->name('school_grades.index');
+<<<<<<< HEAD
 Route::get('/school_grades', 'App\Http\Controllers\School_gradeController@create')->name('school_grade.create')->middleware('auth');
 Route::get('/school_grades', 'App\Http\Controllers\School_gradeController@create')->name('student.create')->middleware('auth');
+=======
+
+>>>>>>> 6d2a0fe0526d9a21b0624f06546fa7ea01537733
 
 Auth::routes();
 
