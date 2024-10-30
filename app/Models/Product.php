@@ -25,7 +25,6 @@ class Product extends Model
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
-<<<<<<< HEAD
 
     public static function searchProducts(Request $request)
     {
@@ -117,6 +116,4 @@ class Product extends Model
             return $product;
         });
     }
-=======
->>>>>>> 6d2a0fe0526d9a21b0624f06546fa7ea01537733
 }
