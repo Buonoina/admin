@@ -26,7 +26,7 @@
         <div class="col-12 mb-2 mt-2">
             <div class="form-group">メーカー名
                 <select name="company_id" class="form-select">
-                    <option>分類を選択してください</otion>
+                    <option value="">{{ config('messages.select_company') }}</option>
                     @foreach ($companies as $company)
                         <option value="{{ $company->id }}">{{ $company->company_name }}</otion>
                     @endforeach
@@ -73,7 +73,7 @@
                 <a class="btn btn-outline-success" href="{{ url('/products') }}">新規登録</a>
             </li>
             <li style="margin-right: 30px;">
-                <a class="btn btn-outline-success" href="{{ url('/products') }}">　戻る　</a>
+                <a class="btn btn-outline-success" href="{{ url('/products') }}">戻る　</a>
             </li>
         </ul>
 

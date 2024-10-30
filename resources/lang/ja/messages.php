@@ -2,7 +2,6 @@
 return [
     'name_required' => '名前は必須項目です。',
     'company_required' => '会社は必須項目です。',
-    'select_company' => '分類を選択してください', 
     'price_required' => '価格は必須項目です。',
     'stock_required' => '在庫は必須項目です。',
     'comment_required' => 'コメントは必須項目です。',
