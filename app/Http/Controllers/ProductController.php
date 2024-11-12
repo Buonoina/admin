@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -44,20 +45,21 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         try {
-            Product::createProduct($request);
+            DB::transaction(function () use ($request) {
+                Product::createProduct($request);
+            });
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // バリデーションエラーをキャッチ
             return redirect()->back()
-                ->withErrors($e->validator) // バリデーションエラーをセッションに保存
+                ->withErrors($e->validator)
                 ->withInput();
         } catch (\Exception $e) {
             Log::error(__('messages.error_during_registration') . ' ' . $e->getMessage());
             return redirect()->back()->with('error', __('messages.error_during_registration'))->withInput();
         }
-
+    
         return redirect()->route('products.index')->with("success", __('messages.registration_success'));
     }
-
+    
 
 
     /**
@@ -94,15 +96,12 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        // バリデーションを実行
-        $validation = Product::validateProduct($request, true);
-
-        if ($validation->fails()) {
-            return redirect()->back()->withErrors($validation)->withInput();
-        }
-
         try {
-            Product::updateProduct($request, $product);
+            DB::transaction(function () use ($request, $product) {
+                Product::updateProduct($request, $product);
+            });
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()->withErrors($e->validator)->withInput();
         } catch (\Exception $e) {
             Log::error(__('messages.error_during_registration') . ' ' . $e->getMessage());
             return redirect()->back()->with('error', __('messages.error_during_registration'))->withInput();
@@ -110,6 +109,7 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')->with("success", __('messages.update_success'));
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -120,7 +120,9 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         try {
-            Product::deleteProduct($product);
+            DB::transaction(function () use ($product) {
+                Product::deleteProduct($product);
+            });
         } catch (\Exception $e) {
             Log::error(__('messages.error_during_deletion') . ' ' . $e->getMessage());
             return redirect()->route('products.index')->with('error', __('messages.error_during_deletion'));

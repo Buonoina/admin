@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,7 +47,7 @@ class Product extends Model
     {
         $rules = [
             'name' => 'required|max:20',
-            'company_id' => 'required|integer|exists:companies,id', // 存在確認を追加
+            'company_id' => 'required|integer|exists:companies,id',
             'price' => 'required|integer',
             'stock' => 'required|integer',
             'comment' => 'required|max:140',
@@ -55,9 +56,9 @@ class Product extends Model
 
         $messages = [
             'name.required' => __('messages.name_required'),
-            'company_id.required' => __('messages.company_required'), // 既存のメッセージ
-            'company_id.integer' => __('messages.select_company'), // 整数のエラーメッセージ
-            'company_id.exists' => __('messages.select_company'), // 存在しない場合のエラーメッセージ
+            'company_id.required' => __('messages.company_required'),
+            'company_id.integer' => __('messages.select_company'),
+            'company_id.exists' => __('messages.select_company'),
             'price.required' => __('messages.price_required'),
             'stock.required' => __('messages.stock_required'),
             'comment.required' => __('messages.comment_required'),
@@ -69,97 +70,56 @@ class Product extends Model
         return Validator::make($request->all(), $rules, $messages);
     }
 
-    /**
-     * 商品を作成するメソッド
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return Product
-     * @throws \Exception
-     */
-    // createProductメソッド内でバリデーションを行う
     public static function createProduct(Request $request)
     {
-        // トランザクション開始
-        return DB::transaction(function () use ($request) {
-            // バリデーション
-            $validation = self::validateProduct($request);
-            if ($validation->fails()) {
-                // バリデーションエラーの場合、例外をスロー
-                throw new \Illuminate\Validation\ValidationException($validation);
-            }
+        $validation = self::validateProduct($request);
+        if ($validation->fails()) {
+            throw new \Illuminate\Validation\ValidationException($validation);
+        }
 
-            // 画像の保存
-            $path = $request->file('img_path')->store('public/img_paths');
+        $path = $request->file('img_path')->store('public/img_paths');
 
-            // 商品の新規作成
-            $product = new self();
-            $product->name = $request->input("name");
-            $product->company_id = $request->input("company_id");
-            $product->price = $request->input("price");
-            $product->stock = $request->input("stock");
-            $product->comment = $request->input("comment");
-            $product->img_path = $path;
-            $product->save();
-
-            return $product;
-        });
+        return self::create([
+            'name' => $request->input("name"),
+            'company_id' => $request->input("company_id"),
+            'price' => $request->input("price"),
+            'stock' => $request->input("stock"),
+            'comment' => $request->input("comment"),
+            'img_path' => $path,
+        ]);
     }
 
-
-    /**
-     * 商品を更新するメソッド
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param Product $product
-     * @return Product
-     * @throws \Exception
-     */
     public static function updateProduct(Request $request, Product $product)
     {
-        return DB::transaction(function () use ($request, $product) {
-            // バリデーション
-            $validation = self::validateProduct($request, true);
-            if ($validation->fails()) {
-                throw new \Exception($validation->errors()->first());
-            }
+        $validation = self::validateProduct($request, true);
+        if ($validation->fails()) {
+            throw new \Illuminate\Validation\ValidationException($validation);
+        }
 
-            // 画像の保存（新しい画像がある場合）
-            if ($request->file('img_path')) {
-                // 古い画像を削除
-                if ($product->img_path) {
-                    Storage::delete($product->img_path);
-                }
-                // 新しい画像を保存
-                $path = $request->file('img_path')->store('public/img_paths');
-                $product->img_path = $path; // 新しい画像パスを更新
-            }
-
-            // 商品の更新
-            $product->name = $request->input("name");
-            $product->company_id = $request->input("company_id");
-            $product->price = $request->input("price");
-            $product->stock = $request->input("stock");
-            $product->comment = $request->input("comment");
-            $product->save();
-
-            return $product;
-        });
-    }
-
-    /**
-     * 商品を削除するメソッド
-     *
-     * @param Product $product
-     * @return void
-     */
-    public static function deleteProduct(Product $product)
-    {
-        DB::transaction(function () use ($product) {
-            // 古い画像の削除
+        if ($request->file('img_path')) {
             if ($product->img_path) {
                 Storage::delete($product->img_path);
             }
-            $product->delete();
-        });
+            $path = $request->file('img_path')->store('public/img_paths');
+            $product->img_path = $path;
+        }
+
+        $product->update([
+            'name' => $request->input("name"),
+            'company_id' => $request->input("company_id"),
+            'price' => $request->input("price"),
+            'stock' => $request->input("stock"),
+            'comment' => $request->input("comment"),
+        ]);
+
+        return $product;
+    }
+
+    public static function deleteProduct(Product $product)
+    {
+        if ($product->img_path) {
+            Storage::delete($product->img_path);
+        }
+        $product->delete();
     }
 }
